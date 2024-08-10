@@ -1,15 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { useToast } from '@/components/ui/use-toast';
-import { ToastAction } from '@/components/ui/toast';
+import { X, CircleCheck } from 'lucide-react';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,7 +17,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+  AlertDialogTrigger,
+  AlertDialogCancel,
+} from '@/components/ui/alert-dialog';
 import {
   Table,
   TableBody,
@@ -26,7 +27,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import {
   Pagination,
   PaginationContent,
@@ -35,13 +36,19 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination";
+} from '@/components/ui/pagination';
 
 function FileUploadAndExportComponent() {
   const [showExportOptions, setShowExportOptions] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+
+  // State for filters
+  const [filterType, setFilterType] = useState('name');
+  const [filterValue, setFilterValue] = useState('contains');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const handleDownloadClick = () => {
     setIsDialogOpen(true);
@@ -75,18 +82,42 @@ function FileUploadAndExportComponent() {
     { sNo: 21, name: 'Charlie White', contact: '789-123-4567', email: 'charlie.white@example.com', organization: 'DEF Inc', program: 'M.Tech', course: 'Civil Engineering', gender: 'Male' },
   ];
 
-  const totalPages = Math.ceil(students.length / itemsPerPage);
+  // Apply filters and search term
+  const filteredStudents = useMemo(() => {
+    let filtered = students;
+
+    // Apply search term filter
+    if (searchTerm) {
+      filtered = filtered.filter(student => {
+        const valueToCheck = student[filterType] || '';
+        switch (filterValue) {
+          case 'contains':
+            return valueToCheck.toLowerCase().includes(searchTerm.toLowerCase());
+          case 'equals-to':
+            return valueToCheck.toLowerCase() === searchTerm.toLowerCase();
+          case 'starts-with':
+            return valueToCheck.toLowerCase().startsWith(searchTerm.toLowerCase());
+          default:
+            return true;
+        }
+      });
+    }
+
+    return filtered;
+  }, [students, filterType, filterValue, searchTerm]);
+
+  const totalPages = Math.ceil(filteredStudents.length / itemsPerPage);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
 
-  const paginatedData = students.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const paginatedData = filteredStudents.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const renderPageNumbers = () => {
     const pageNumbers = [];
     if (totalPages <= 5) {
-      for (let i = 1; i <= 2; i++) {
+      for (let i = 1; i <= totalPages; i++) {
         pageNumbers.push(
           <PaginationItem key={i}>
             <PaginationLink href="#" isActive={currentPage === i} onClick={() => handlePageChange(i)}>
@@ -148,22 +179,22 @@ function FileUploadAndExportComponent() {
   return (
     <div className="tw-p-4 tw-overflow-x-auto">
       {/* First Card: Data Type, Select Actions, and Upload File */}
-      <Card className="tw-mb-6 ">
+      <Card className="tw-mb-6">
         <CardContent>
           <div className="tw-flex tw-items-center tw-space-x-6 tw-w-full tw-h-auto tw-mb-6 tw-mt-6">
             <div className="tw-flex tw-flex-col">
               <label htmlFor="dataType" className="tw-text-gray-700 tw-font-medium">Data Type</label>
-              <select id="dataType" className="tw-mt-1 tw-h-[30px] tw-px-3  tw-rounded-md tw-border tw-border-border  tw-text-black ">
-                <option  value="students">Students</option>
+              <select id="dataType" className="tw-mt-1 tw-h-[30px] tw-px-3 tw-rounded-md tw-border tw-border-blue-900 tw-text-blue-900">
+                <option value="students">Students</option>
                 {/* Add more options as needed */}
               </select>
             </div>
-            <div className="tw-flex tw-flex-col tw-space-y-2 tw-mr-4 ">
+            <div className="tw-flex tw-flex-col tw-space-y-2 tw-mr-4">
               <h2 className="tw-font-medium">Select Actions</h2>
-              <div className="tw-flex tw-space-x-2 ">
-                <Button variant="outline" className="tw-h-[30px] tw-w-auto tw-px-4 tw-bg-white  tw-border tw-border-border">Bulk Import</Button>
-                <Button variant="outline" className="tw-h-[30px] tw-w-auto tw-px-4 tw-bg-white tw-border tw-border-border" onClick={() => setShowExportOptions(true)}>Bulk Export</Button>
-                <Button variant="outline" className="tw-h-[30px] tw-w-auto tw-px-4 tw-bg-white tw-border tw-border-border">Bulk Update</Button>
+              <div className="tw-flex tw-space-x-2">
+                <Button variant="outline" className="tw-h-[30px] tw-w-auto tw-px-4 tw-bg-white tw-border tw-border-blue-900 tw-text-blue-900">Bulk Import</Button>
+                <Button variant="outline" className="tw-h-[30px] tw-w-auto tw-px-4 tw-bg-white tw-border tw-border-blue-900 tw-text-blue-900" onClick={() => setShowExportOptions(true)}>Bulk Export</Button>
+                <Button variant="outline" className="tw-h-[30px] tw-w-auto tw-px-4 tw-bg-white tw-border tw-border-blue-900 tw-text-blue-900">Bulk Update</Button>
               </div>
             </div>
             <div className="tw-flex tw-flex-col tw-items-start tw-mt-4">
@@ -179,54 +210,60 @@ function FileUploadAndExportComponent() {
 
       {/* Second Card: Download, Filter Options, Table, and Pagination */}
       {showExportOptions && (
-        <div className='tw-w-[1100px] tw-h-[643px]'>
-          <Card className="tw-mb-2  tw-w-[1200px] tw-h-[570px]">
+        <div className='tw-w-[1150px] tw-h-[643px]'>
+          <Card className="tw-mb-2 tw-w-[1200px] tw-h-[570px]">
             <CardContent>
-              {/* <div className="tw-mt-6 tw-w-full tw-h-auto"> */}
+              <div className="tw-flex tw-items-center tw-justify-between tw-mb-4 tw-mt-4">
+                <Button variant="outline" className="tw-h-[30px] tw-w-auto tw-px-4 tw-bg-blue-800 tw-text-white tw-border tw-border-blue-900" onClick={handleDownloadClick}>
+                  Download
+                </Button>
 
-                <div className="tw-flex tw-items-center tw-justify-between tw-mb-4 tw-mt-4">
-                  <Button variant="outline" className="tw-h-[30px] tw-w-auto tw-px-4 tw-bg-blue-800 tw-text-white" onClick={handleDownloadClick}>
-                    Download
-                  </Button>
-                  <div className="tw-flex tw-items-center tw-space-x-4">
-                    <Select>
-                      <SelectTrigger className="tw-h-[30px] tw-w-[153px] tw-px-3 tw-border tw-border-gray-300 tw-rounded-md focus:tw-border-gray-300 tw-bg-white">
+                <div className="tw-flex tw-items-center tw-space-x-4">
+                  <div className="tw-w-[140px] tw-h-[30px] tw-px-3 tw-border tw-rounded-md focus:tw-border-gray-300 tw-bg-white tw-border-blue-900 tw-text-blue-900">
+                    <Select value={filterType} onValueChange={(value) => setFilterType(value)}>
+                      <SelectTrigger className="tw-w-full tw-h-full tw-bg-transparent tw-border-none">
                         <SelectValue placeholder="Filter" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="filter">Filter</SelectItem>
+                        <SelectItem value="name">Name</SelectItem>
+                        <SelectItem value="contact">Contact</SelectItem>
+                        <SelectItem value="email">Email</SelectItem>
                         <SelectItem value="organization">Organization</SelectItem>
-                        <SelectItem value="roles">Roles</SelectItem>
-                        <SelectItem value="status">Status</SelectItem>
-                        <SelectItem value="user-id">User ID</SelectItem>
-                        {/* Add more options as needed */}
+                        <SelectItem value="program">Program</SelectItem>
+                        <SelectItem value="course">Course</SelectItem>
+                        <SelectItem value="gender">Gender</SelectItem>
                       </SelectContent>
                     </Select>
-                    <Select>
-                      <SelectTrigger className="tw-h-[30px] tw-w-[93px] tw-px-3 tw-border tw-border-gray-300 tw-rounded-md focus:tw-border-gray-300 tw-bg-white">
-                        <SelectValue placeholder="Condition" />
+                  </div>
+                  <div className="tw-w-[140px] tw-h-[30px] tw-px-3 tw-border tw-rounded-md focus:tw-border-gray-300 tw-bg-white tw-border-blue-900 tw-text-blue-900">
+                    <Select value={filterValue} onValueChange={(value) => setFilterValue(value)}>
+                      <SelectTrigger className="tw-w-full tw-h-full tw-bg-transparent tw-border-none">
+                        <SelectValue placeholder="Filter Value" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="contains">Contains</SelectItem>
-                        <SelectItem value="equals-to">Equals to</SelectItem>
-                        <SelectItem value="starts-with">Starts with</SelectItem>
+                        <SelectItem value="equals-to">Equals To</SelectItem>
+                        <SelectItem value="starts-with">Starts With</SelectItem>
                       </SelectContent>
                     </Select>
-                    <input type="text" placeholder="Write" className="tw-h-[30px] tw-w-[173px] tw-px-3 tw-border tw-border-gray-300 tw-rounded-md" />
                   </div>
+                  <input
+                    type="text"
+                    placeholder="Write"
+                    className="tw-h-[30px] tw-w-[200px] tw-px-2 tw-border tw-border-blue-900 tw-text-blue-900 tw-rounded-md"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
                 </div>
-
-                <p className="tw-mb-4 tw-text-gray-700">
-                  Please review the field each column has matched to. Then click "Validate Data" to check the data for errors.
-                </p>
+              </div>
 
                 {/* Table */}
                 <div className="tw-bg-white tw-shadow-md tw-rounded-md tw-overflow-x-auto">
                   <Table className="tw-min-w-full tw-border-collapse  tw-w-[946px] tw-h-[410px]">
                     <TableHeader>
-                      <TableRow className="tw-bg-[#EAE3CB] ">
+                      <TableRow className="tw-bg-[#FFFAED]  tw-text-bold tw-text-black ">
                            
-                         <TableHead className="tw-border tw-border-black tw-px-4 tw-py-2 tw-font-bold">S.No</TableHead> 
+                         <TableHead className="tw-border tw-border-black tw-px-4 tw-py-2 tw-font-bold tw-text-semibold">S.No</TableHead> 
                         <TableHead className="tw-border tw-border-black tw-px-4 tw-py-2 tw-font-bold">Student Name</TableHead>
                         <TableHead className="tw-border tw-border-black tw-px-4 tw-py-2 tw-font-bold">Contact</TableHead>
                         <TableHead className="tw-border tw-border-black tw-px-4 tw-py-2 tw-font-bold">Email ID</TableHead>
@@ -236,9 +273,9 @@ function FileUploadAndExportComponent() {
                         <TableHead className="tw-border tw-border-black tw-px-4 tw-py-2 tw-font-bold">Gender</TableHead>
                       </TableRow>
                     </TableHeader>
-                    <TableBody className="tw-bg-[#EAE3CB]  tw-h-[20px]" >
+                    <TableBody className="tw-bg-[#FFFAED]  tw-h-[20px]" >
                       {paginatedData.map((student, index) => (
-                        <TableRow key={index} className="tw-border tw-border-black ">
+                        <TableRow key={index} className="tw-border tw-border-[#FFFAED] ">
                           <TableCell className="tw-border tw-border-black tw-px-4 tw-py-2 tw-font-medium">{student.sNo}</TableCell>
                           <TableCell className="tw-border tw-border-black tw-px-4 tw-py-2 tw-font-medium">{student.name}</TableCell>
                           <TableCell className="tw-border tw-border-black tw-px-4 tw-py-2 tw-font-medium">{student.contact}</TableCell>
@@ -253,7 +290,9 @@ function FileUploadAndExportComponent() {
                   </Table>
                 </div>
 
-                <div className="tw-flex tw-justify-between tw-items-center tw-w-[1150px] tw-h-[45px] tw-top-[409px] tw-left-[2px] tw-p-[15px_5px_0_5px] tw-gap-[711px] tw-opacity-100">
+
+           
+              <div className="tw-flex tw-justify-between tw-items-center tw-w-[1150px] tw-h-[45px] tw-top-[409px] tw-left-[2px] tw-p-[15px_5px_0_5px] tw-gap-[711px] tw-opacity-100">
         <div className="tw-text-gray-700 tw-w-[61px] tw-h-[30px] tw-gap-[25px]">
           <span className="tw-mr-4">Page</span>
           {currentPage}
@@ -315,35 +354,54 @@ function FileUploadAndExportComponent() {
           </Pagination>
         </div>
 
+  </div>
 
-                
 
-                {/* Alert Dialog */}
-                <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                  <AlertDialogContent 
-                    className="tw-fixed tw-top-1/2 tw-left-1/2 tw-transform tw--translate-x-1/2 tw--translate-y-1/2 tw-w-[320px] tw-h-[228px] tw-rounded-[4px] tw-p-4 tw-bg-white tw-shadow-lg"
-                  >  
-                    <div className="flex flex-col justify-center items-center tw-h-full">
-                      <img src="/11.png" className="tw-w-60 h-61 mb-4" alt="Description" />
-                      <div className=' tw-ml-2'>
-                        <AlertDialogFooter className="tw-flex tw-justify-center tw-items-center tw-w-full tw-pt-4 tw-text-center">
-                          <AlertDialogAction
-                            onClick={handleDialogClose}
-                            className="tw-bg-blue-900 tw-text-white tw-text-center tw-w-[200px] tw-h-[30px] tw-px-5 tw-py-5 tw-rounded-md tw-shadow-md tw-ml-21"
-                          >
-                            Continue
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </div>
-                    </div>
-                  </AlertDialogContent>
-                </AlertDialog>
 
-              </div>
             </CardContent>
           </Card>
         </div>
       )}
+
+
+
+
+      {/* Alert Dialog for Download Confirmation */}
+      <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+  <AlertDialogTrigger asChild>
+    {/* Your trigger component */}
+  </AlertDialogTrigger>
+  <AlertDialogContent className="tw-w-[335px] tw-h-[228px] tw-box-border">
+  <div className="tw-absolute tw-top-0 tw-right-0 tw-p-2">
+      <AlertDialogCancel className="!tw-ring-[-2] hover:!tw-bg-none">
+        <X className="tw-w-[15px] tw-h-[15px]" />
+      </AlertDialogCancel>
+    </div>
+    <AlertDialogHeader className="tw-text-center">
+      <div className="tw-text-green-500 tw-flex tw-justify-center">
+      <CircleCheck className="tw-w-[66px] tw-h-[50px]" />
+      </div>
+      <div className="tw-flex tw-justify-center tw-mb-8">
+        <AlertDialogTitle>
+          <span className="tw-font-montserrat tw-font-semibold tw-text-[14px] tw-leading-[19.5px] tw-text-center ">
+            Completed
+          </span>
+        </AlertDialogTitle>
+      </div>
+    </AlertDialogHeader>
+    <AlertDialogDescription>
+      <div className="tw-flex tw-flex-col tw-mt-15 tw-px-6 tw-py-2  !tw-border-primary tw-w-full tw-rounded-[10px] tw-whitespace-nowrap">
+        Your file has been downloaded successfully.
+      </div>
+    </AlertDialogDescription>
+    <div className="tw-flex tw-justify-center tw-mb-20">
+      <Button className="tw-bg-primary tw-w-[150px] tw-rounded tw-text-white ">
+        Continue
+      </Button>
+    </div>
+  </AlertDialogContent>
+</AlertDialog>
+
     </div>
   );
 }

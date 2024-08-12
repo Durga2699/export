@@ -50,9 +50,7 @@ function FileUploadAndExportComponent() {
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const handleDownloadClick = () => {
-    setIsDialogOpen(true);
-  };
+
 
   const handleDialogClose = () => {
     setIsDialogOpen(false);
@@ -116,6 +114,38 @@ function FileUploadAndExportComponent() {
   const paginatedData = filteredStudents.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   const tableHeight = Math.max(Math.min(paginatedData.length * 60, 480), 60);
   console.log('Calculated Table Height:', tableHeight);
+
+
+  //  dowload 
+  
+  const handleDownloadClick = () => {
+    const csvData = generateCSV(students);
+    downloadCSV(csvData, 'students_data.csv');
+    setIsDialogOpen(true);
+  };
+
+  const generateCSV = (data) => {
+    const headers = ['S.No', 'Name', 'Contact', 'Email', 'Organization', 'Program', 'Course', 'Gender'];
+    const rows = data.map(student => [
+      student.sNo, student.name, student.contact, student.email, 
+      student.organization, student.program, student.course, student.gender
+    ]);
+
+    let csvContent = headers.join(',') + '\n';
+    csvContent += rows.map(row => row.join(',')).join('\n');
+    return csvContent;
+  };
+
+  const downloadCSV = (csvContent, fileName) => {
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute('download', fileName);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
 
 
 
@@ -184,6 +214,7 @@ function FileUploadAndExportComponent() {
     return pageNumbers;
   };
 
+  
   return (
     <div className="tw-p-4 tw-overflow-x-auto">
       {/* First Card: Data Type, Select Actions, and Upload File */}
@@ -206,7 +237,7 @@ function FileUploadAndExportComponent() {
               </div>
             </div>
             <div className="tw-flex tw-flex-col tw-items-start tw-mt-4">
-              <small className="tw-text-gray-500">Only CSV format is allowed</small>
+              <small className="tw-text-gray-500">File will be downloaded in CSV  format </small>
               <div className="tw-flex tw-items-center tw-mt-2">
                 <input type="checkbox" id="firstRow" className="tw-form-checkbox tw-text-blue-500" />
                 <label htmlFor="firstRow" className="tw-ml-2 tw-text-gray-700">First rows contain column names</label>
@@ -222,9 +253,53 @@ function FileUploadAndExportComponent() {
           <Card className="tw-mb-2 tw-w-[1185px] tw-h-[620px]">
             <CardContent>
               <div className="tw-flex tw-items-center tw-justify-between tw-mb-4 tw-mt-4">
-                <Button variant="outline" className="tw-h-[30px] tw-w-auto tw-px-4 tw-bg-blue-800 tw-text-white tw-border tw-border-blue-900" onClick={handleDownloadClick}>
-                  Download
-                </Button>
+                <div>
+                <Button 
+        variant="outline" 
+        className="tw-h-[30px] tw-w-auto tw-px-4 tw-bg-blue-800 tw-text-white tw-border tw-border-blue-900" 
+        onClick={handleDownloadClick}
+      >
+        Download
+      </Button>
+
+      <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <AlertDialogTrigger asChild>
+          {/* Optional trigger component */}
+        </AlertDialogTrigger>
+        <AlertDialogContent className="tw-w-[335px] tw-h-[228px] tw-box-border">
+          <div className="tw-absolute tw-top-0 tw-right-0 tw-p-2">
+            <AlertDialogCancel className="!tw-ring-[-2] hover:!tw-bg-none">
+              <X className="tw-w-[15px] tw-h-[15px]" />
+            </AlertDialogCancel>
+          </div>
+          <AlertDialogHeader className="tw-text-center">
+            <div className="tw-text-green-500 tw-flex tw-justify-center">
+              <CircleCheck className="tw-w-[66px] tw-h-[50px]" />
+            </div>
+            <div className="tw-flex tw-justify-center tw-mb-8">
+              <AlertDialogTitle>
+                <span className="tw-font-montserrat tw-font-semibold tw-text-[14px] tw-leading-[19.5px] tw-text-center">
+                  Completed
+                </span>
+              </AlertDialogTitle>
+            </div>
+          </AlertDialogHeader>
+          <AlertDialogDescription>
+            <div className="tw-flex tw-flex-col tw-mt-15 tw-px-6 tw-py-2 !tw-border-primary tw-w-full tw-rounded-[10px] tw-whitespace-nowrap">
+              Your file has been downloaded successfully.
+            </div>
+          </AlertDialogDescription>
+          <div className="tw-flex tw-justify-center tw-mb-20">
+            <Button className="tw-bg-primary tw-w-[150px] tw-rounded tw-text-white">
+              Continue
+            </Button>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
+
+
+                </div>
+
 
                 <div className="tw-flex tw-items-center tw-space-x-4">
                   <div className="tw-w-[140px] tw-h-[30px] tw-px-3 tw-border tw-rounded-md  tw-bg-white tw-border-blue-900 tw-text-blue-900">
@@ -415,43 +490,17 @@ function FileUploadAndExportComponent() {
 
 
       {/* Alert Dialog for Download Confirmation */}
-      <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-  <AlertDialogTrigger asChild>
-    {/* Your trigger component */}
-  </AlertDialogTrigger>
-  <AlertDialogContent className="tw-w-[335px] tw-h-[228px] tw-box-border">
-  <div className="tw-absolute tw-top-0 tw-right-0 tw-p-2">
-      <AlertDialogCancel className="!tw-ring-[-2] hover:!tw-bg-none">
-        <X className="tw-w-[15px] tw-h-[15px]" />
-      </AlertDialogCancel>
-    </div>
-    <AlertDialogHeader className="tw-text-center">
-      <div className="tw-text-green-500 tw-flex tw-justify-center">
-      <CircleCheck className="tw-w-[66px] tw-h-[50px]" />
-      </div>
-      <div className="tw-flex tw-justify-center tw-mb-8">
-        <AlertDialogTitle>
-          <span className="tw-font-montserrat tw-font-semibold tw-text-[14px] tw-leading-[19.5px] tw-text-center ">
-            Completed
-          </span>
-        </AlertDialogTitle>
-      </div>
-    </AlertDialogHeader>
-    <AlertDialogDescription>
-      <div className="tw-flex tw-flex-col tw-mt-15 tw-px-6 tw-py-2  !tw-border-primary tw-w-full tw-rounded-[10px] tw-whitespace-nowrap">
-        Your file has been downloaded successfully.
-      </div>
-    </AlertDialogDescription>
-    <div className="tw-flex tw-justify-center tw-mb-20">
-      <Button className="tw-bg-primary tw-w-[150px] tw-rounded tw-text-white ">
-        Continue
-      </Button>
-    </div>
-  </AlertDialogContent>
-</AlertDialog>
+  
+
+
+
+
+
+
 
     </div>
   );
 }
+
 
 export default FileUploadAndExportComponent;

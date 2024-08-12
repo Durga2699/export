@@ -151,69 +151,6 @@ function FileUploadAndExportComponent() {
 
 
   
-
-  const renderPageNumbers = () => {
-    const pageNumbers = [];
-    if (totalPages <= 5) {
-      for (let i = 1; i <= totalPages; i++) {
-        pageNumbers.push(
-          <PaginationItem key={i}>
-            <PaginationLink href="#" isActive={currentPage === i} onClick={() => handlePageChange(i)}>
-              {i}
-            </PaginationLink>
-          </PaginationItem>
-        );
-      }
-    } else {
-      pageNumbers.push(
-        <PaginationItem key={1}>
-          <PaginationLink href="#" isActive={currentPage === 1} onClick={() => handlePageChange(1)}>
-            1
-          </PaginationLink>
-        </PaginationItem>
-      );
-      if (currentPage > 3) {
-        pageNumbers.push(<PaginationEllipsis key="ellipsis1" />);
-      }
-      if (currentPage > 2) {
-        pageNumbers.push(
-          <PaginationItem key={currentPage - 1}>
-            <PaginationLink href="#" isActive={false} onClick={() => handlePageChange(currentPage - 1)}>
-              {currentPage - 1}
-            </PaginationLink>
-          </PaginationItem>
-        );
-      }
-      pageNumbers.push(
-        <PaginationItem key={currentPage}>
-          <PaginationLink href="#" isActive={true} onClick={() => handlePageChange(currentPage)}>
-            {currentPage}
-          </PaginationLink>
-        </PaginationItem>
-      );
-      if (currentPage < totalPages - 1) {
-        pageNumbers.push(
-          <PaginationItem key={currentPage + 1}>
-            <PaginationLink href="#" isActive={false} onClick={() => handlePageChange(currentPage + 1)}>
-              {currentPage + 1}
-            </PaginationLink>
-          </PaginationItem>
-        );
-      }
-      if (currentPage < totalPages - 2) {
-        pageNumbers.push(<PaginationEllipsis key="ellipsis2" />);
-      }
-      pageNumbers.push(
-        <PaginationItem key={totalPages}>
-          <PaginationLink href="#" isActive={currentPage === totalPages} onClick={() => handlePageChange(totalPages)}>
-            {totalPages}
-          </PaginationLink>
-        </PaginationItem>
-      );
-    }
-    return pageNumbers;
-  };
-
   
   return (
     <div className="tw-p-4 tw-overflow-x-auto">
@@ -231,9 +168,9 @@ function FileUploadAndExportComponent() {
             <div className="tw-flex tw-flex-col tw-space-y-2 tw-mr-4">
               <h2 className="tw-font-medium">Select Actions</h2>
               <div className="tw-flex tw-space-x-2">
-                <Button variant="outline" className="tw-h-[30px] tw-w-auto tw-px-4 tw-bg-white tw-border tw-border-blue-950 tw-text-blue-950">Bulk Import</Button>
-                <Button variant="outline" className="tw-h-[30px] tw-w-auto tw-px-4 tw-bg-white tw-border tw-border-blue-950 tw-text-blue-950" onClick={() => setShowExportOptions(true)}>Bulk Export</Button>
-                <Button variant="outline" className="tw-h-[30px] tw-w-auto tw-px-4 tw-bg-white tw-border tw-border-blue-950 tw-text-blue-950">Bulk Update</Button>
+                <Button variant="outline" className="tw-h-[30px] tw-w-auto tw-px-4 tw-bg-white tw-border tw-border-blue-950 tw-text-blue-955">Bulk Import</Button>
+                <Button variant="outline" className="tw-h-[30px] tw-w-auto tw-px-4 tw-bg-white tw-border tw-border-blue-950 tw-text-blue-955" onClick={() => setShowExportOptions(true)}>Bulk Export</Button>
+                <Button variant="outline" className="tw-h-[30px] tw-w-auto tw-px-4 tw-bg-white tw-border tw-border-blue-950 tw-text-blue-955">Bulk Update</Button>
               </div>
             </div>
             <div className="tw-flex tw-flex-col tw-items-start tw-mt-4">
@@ -414,73 +351,53 @@ function FileUploadAndExportComponent() {
                 </Table>
               </div>
 
-           
               <div className="tw-flex tw-justify-between tw-items-center tw-w-[1150px] tw-h-[45px] tw-top-[409px] tw-left-[2px] tw-p-[15px_5px_0_5px] tw-gap-[711px] tw-opacity-100">
-        <div className="tw-text-gray-700 tw-w-[61px] tw-h-[30px] tw-gap-[25px]">
-          <span className="tw-mr-4">Page</span>
-          {currentPage}
-        </div>
-        <div className="tw-flex tw-items-center tw-space-x-2">
-          <Pagination className="tw-flex tw-items-center tw-space-x-2">
-            <PaginationContent className="tw-flex tw-items-center tw-space-x-1">
-              <PaginationItem>
-                <PaginationPrevious
-                  className="tw-px-3 tw-py-1"
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.max(prev - 1, 1))
-                  }
-                />
-              </PaginationItem>
-              {(() => {
-                const pageNumbers = [];
-                if (totalPages <= 4) {
-                  for (let i = 1; i <= totalPages; i++) {
-                    pageNumbers.push(i);
-                  }
-                } else {
-                  if (currentPage <= 2) {
-                    pageNumbers.push(1, 2, "...", totalPages);
-                  } else if (currentPage >= totalPages - 1) {
-                    pageNumbers.push(1, totalPages - 1, totalPages);
-                  } else {
-                    pageNumbers.push(1, currentPage, "...", totalPages);
-                  }
-                }
-                return pageNumbers;
-              })().map((page, index) => (
-                <PaginationItem key={index}>
-                  {page === "..." ? (
-                    <span className="tw-px-3 tw-py-1">...</span>
-                  ) : (
-                    <PaginationLink
-                      className={`tw-px-3 tw-py-1 ${
-                        currentPage === page
-                          ? "tw-bg-gray-200 tw-font-bold tw-text-black"
-                          : ""
-                      }`}
-                      onClick={() => setCurrentPage(page)}
-                    >
-                      {page}
-                    </PaginationLink>
-                  )}
-                </PaginationItem>
-              ))}
-              <PaginationItem>
-                <PaginationNext
-                  className="tw-px-3 tw-py-1"
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                  }
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
+  <div className="tw-text-gray-700 tw-w-[61px] tw-h-[30px] tw-gap-[25px]">
+    <span className="tw-mr-4">Page</span>
+    {currentPage}
+  </div>
+  <div className="tw-flex tw-items-center tw-space-x-2">
+    <Pagination className="tw-flex tw-items-center tw-space-x-2">
+      <PaginationContent className="tw-flex tw-items-center tw-space-x-1">
+        <PaginationItem>
+          <PaginationPrevious
+            className="tw-px-3 tw-py-1"
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          >
+            &lt; Previous
+          </PaginationPrevious>
+        </PaginationItem>
+        <PaginationItem>
+          <PaginationLink
+            className={`tw-px-3 tw-py-1 ${
+              currentPage === 1 ? 'tw-bg-gray-200 tw-font-bold tw-text-black' : ''
+            }`}
+            onClick={() => setCurrentPage(1)}
+          >
+            1
+          </PaginationLink>
+        </PaginationItem>
+        <PaginationItem>
+          <PaginationNext
+            className="tw-px-3 tw-py-1"
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+          >
+            Next &gt;
+          </PaginationNext>
+        </PaginationItem>
+      </PaginationContent>
+    </Pagination>
+  </div>
+</div>
 
-    </div>
+
+
+          <div>
+
          <p className="tw-mb-4  tw-text-[#1D1F71]">
           Total record generated is 200
           </p>
+          </div>
             </CardContent>
           </Card>
         </div>
